@@ -1,6 +1,7 @@
 {
   "name": "orthanc_aws",
   "version": "0.1.0",
+  "license": "MIT",
   "bin": {
     "orthanc_aws": "bin/orthanc_aws.js"
   },
