@@ -1,0 +1,11 @@
+{
+  "name": "orthanc_aws",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/gmeligio/orthanc_aws.git",
+  "author": "Eligio Mariño <gmeligio@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "aws-cdk-lib": "^2.8.0"
+  }
+}
