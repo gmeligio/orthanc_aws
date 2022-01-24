@@ -30,7 +30,8 @@ https://book.orthanc-server.com/users/docker.html
 Infrastructure
 ---------------
 
-WIP
+#. Set the environment variables AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_DEFAULT_REGION to appropriate values.
+
 
 Deployment
 -----------
