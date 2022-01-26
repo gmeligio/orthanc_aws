@@ -3,13 +3,14 @@ Orthan server in AWS
 
 Orthanc server https://www.orthanc-server.com/.
 
-Features:
+Features
+---------
 
 |uncheck| autoscaling
 
-|uncheck| auto-recovery
+|check| auto-recovery
 
-|uncheck| cloudwatch logs
+|check| cloudwatch logs
 
 |uncheck| loadbalancer SSL offloading
 
@@ -22,6 +23,8 @@ https://book.orthanc-server.com/plugins/postgresql.html
 
 https://hub.docker.com/r/jodogne/orthanc-plugins 
 
+|check| content delivery network
+
 Resources
 ----------
 
@@ -30,11 +33,16 @@ https://book.orthanc-server.com/users/docker.html
 Infrastructure
 ---------------
 
-#. vpc1 :
+Regenerate diagram with
 
-    #. ecs1:
+.. code-block:: bash
+
+   npx cdk-diag --target ./docs/diagram.png
 
 
+.. figure:: dosc/diagram.png
+      
+    Orthanc infrastructure on AWS
 
 
 Deployment
