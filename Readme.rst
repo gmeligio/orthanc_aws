@@ -13,11 +13,11 @@ Features:
 
 |uncheck| loadbalancer SSL offloading
 
-|uncheck| publicly accessible
+|check| publicly accessible
 
-|uncheck| network security
+|check| network security
 
-|uncheck| Postgres database.
+|check| Postgres database.
 https://book.orthanc-server.com/plugins/postgresql.html 
 
 https://hub.docker.com/r/jodogne/orthanc-plugins 

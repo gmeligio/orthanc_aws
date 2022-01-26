@@ -15,6 +15,7 @@ import * as cloudfrontOrigins from "aws-cdk-lib/aws-cloudfront-origins";
 // Generic constants
 const ANY_IPV4_CIDR = "0.0.0.0/0";
 const HTTP_PORT = 80;
+const HTTPS_PORT = 443;
 const ORTHANC_DICOM_SERVER_PORT = 4242;
 const ORTHANC_HTTP_SERVER_PORT = 8042;
 const POSTGRESQL_PORT = 5432;
@@ -93,7 +94,7 @@ const ECS_FARGATE_SERVICE_ID = "EcsFargateService";
 const ECS_FARGATE_SERVICE_HEALTH_CHECK_INTERVAL_SECONDS = 60;
 const ECS_FARGATE_SERVICE_HEALTH_CHECK_CODES = "200-499";
 const ECS_FARGATE_SERVICE_HEALTH_CHECK_PATH = "/";
-const ECS_FARGATE_SERVICE_CPU_SCLAING_ID = "EcsServiceCpuScaling";
+const ECS_FARGATE_SERVICE_CPU_SCALING_ID = "EcsServiceCpuScaling";
 const ECS_FARGATE_SERVICE_MEMORY_SCALING_ID = "EcsServiceMemoryScaling";
 
 // Cloudfront constants
@@ -111,6 +112,8 @@ const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_DESCRIPTION =
   "Orthanc Distribution URL";
 const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_NAME = "cloudfrontDistributionURL";
 
+const ECS_FARGATE_SERVICE_CPU_SCALING_PERCENT = 75;
+const ECS_FARGATE_SERVICE_MEMORY_SCALING_PERCENT = 75;
 export class OrthancAwsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -366,6 +369,9 @@ export class OrthancAwsStack extends cdk.Stack {
     });
 
     // Create the ECS Fargate service with a load balancer
+    // TODO: support ALB SSL offloading
+    // TODO: add a DNS name and hosted zone
+    // TODO: create a certificate for that hosted zone with ACM
     const ecsFargateService =
       new ecsPatterns.ApplicationLoadBalancedFargateService(
         this,
@@ -379,6 +385,11 @@ export class OrthancAwsStack extends cdk.Stack {
           //   : 1,
           platformVersion: ecs.FargatePlatformVersion.VERSION1_4,
           securityGroups: [ecsSecurityGroup],
+          // redirectHTTP: true,
+          // protocol: elbv2.ApplicationProtocol.HTTPS,
+          // domainName
+          // domainZone
+          // certificate
         }
       );
 
@@ -388,16 +399,16 @@ export class OrthancAwsStack extends cdk.Stack {
     });
 
     ecsScalableTarget.scaleOnCpuUtilization(
-      ECS_FARGATE_SERVICE_CPU_SCLAING_ID,
+      ECS_FARGATE_SERVICE_CPU_SCALING_ID,
       {
-        targetUtilizationPercent: 75,
+        targetUtilizationPercent: ECS_FARGATE_SERVICE_CPU_SCALING_PERCENT,
       }
     );
 
     ecsScalableTarget.scaleOnMemoryUtilization(
       ECS_FARGATE_SERVICE_MEMORY_SCALING_ID,
       {
-        targetUtilizationPercent: 75,
+        targetUtilizationPercent: ECS_FARGATE_SERVICE_MEMORY_SCALING_PERCENT,
       }
     );
 
