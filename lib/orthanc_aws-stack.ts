@@ -114,6 +114,7 @@ const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_NAME = "cloudfrontDistributionURL";
 
 const ECS_FARGATE_SERVICE_CPU_SCALING_PERCENT = 75;
 const ECS_FARGATE_SERVICE_MEMORY_SCALING_PERCENT = 75;
+const RDS_INSTANCE_CW_LOGS_EXPORTS = ["postgresql"];
 export class OrthancAwsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -128,10 +129,11 @@ export class OrthancAwsStack extends cdk.Stack {
     });
 
     // Publish VPC flow logs to CloudWatch Logs
-    const logGroup = new logs.LogGroup(this, VPC_FLOW_LOGS_CW_LOG_GROUP_ID);
+    // const logGroup = new logs.LogGroup(this, VPC_FLOW_LOGS_CW_LOG_GROUP_ID);
 
     vpc.addFlowLog(VPC_FLOW_LOGS_ID, {
-      destination: ec2.FlowLogDestination.toCloudWatchLogs(logGroup),
+      // destination: ec2.FlowLogDestination.toCloudWatchLogs(logGroup),
+      destination: ec2.FlowLogDestination.toCloudWatchLogs(),
       trafficType: ec2.FlowLogTrafficType.ALL,
     });
 
@@ -252,6 +254,8 @@ export class OrthancAwsStack extends cdk.Stack {
         subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
       },
       securityGroups: [rdsClusterSecurityGroup],
+      cloudwatchLogsExports: RDS_INSTANCE_CW_LOGS_EXPORTS,
+      cloudwatchLogsRetention: logs.RetentionDays.THREE_MONTHS,
     });
 
     /* Compute layer */
