@@ -1,21 +1,27 @@
 # Build stage
-FROM osimis/orthanc:21.11.0 as build
+FROM osimis/orthanc:21.11.0 AS build
 
 # Update OS packages
 RUN apt-get -y update
+
+# Install Orthanc S3 plugin build dependencies
 RUN apt-get install -y git mercurial build-essential unzip cmake libcrypto++-dev wget
 
+# Clone Orthanc S3 pluging source code
 WORKDIR /tmp
 RUN hg clone https://hg.orthanc-server.com/orthanc-object-storage/ -b default
 
+# Create Makefile with CMake
 WORKDIR /tmp/build
 RUN cmake -DSTATIC_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DUSE_VCPKG_PACKAGES=OFF -DUSE_SYSTEM_GOOGLE_TEST=OFF ../orthanc-object-storage/Aws
+
+# Build with make and all available cores
 RUN CORES=`grep -c ^processor /proc/cpuinfo` && make -j$CORES
 
 # Release stage
-FROM osimis/orthanc:21.11.0 as release
+FROM osimis/orthanc:21.11.0 AS release
 
-# Get compiled S3 plugin binary from build stage
+# Copy S3 plugin compiled shared library from build stage
 COPY --from=build /tmp/build/libOrthancAwsS3Storage.so /usr/share/orthanc/plugins/
 
 # Update OS packages

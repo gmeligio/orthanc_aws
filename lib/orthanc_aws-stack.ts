@@ -61,7 +61,7 @@ const SECRET_GENERATOR_PASSWORD_LENGTH = 16;
 const KMS_ENABLE_KEY_ROTATION = true;
 
 // Orthanc constants
-const ORTHANC_LOCAL_DOMAIN_SLD_SUFFIX = ".compute.internal-orthanc.local";
+const ORTHANC_LOCAL_DOMAIN_SLD_SUFFIX = ".compute.internal-orthanconaws.local";
 const ORTHANC_ENABLE_DICOM_WEB_PLUGIN = "true";
 const ORTHANC_POSTGRESQL_USERNAME = RDS_INSTANCE_USERNAME;
 const ORTHANC_ENABLE_STONE_WEB_VIEWER_PLUGIN = "true";
@@ -90,10 +90,11 @@ const ECS_CONTAINER_DEFINITION_ID = "EcsContainer";
 const ECS_CONTAINER_IMAGE_ASSET_PATH = "./lib/s3-plugin/";
 const ECS_LINUX_ENABLE_INIT_PROCESS = true;
 const ECS_FARGATE_SERVICE_ID = "EcsFargateService";
-const ECS_FARGATE_SERVICE_MULTI_AZ_INSTANCE_COUNT = 2;
 const ECS_FARGATE_SERVICE_HEALTH_CHECK_INTERVAL_SECONDS = 60;
 const ECS_FARGATE_SERVICE_HEALTH_CHECK_CODES = "200-499";
 const ECS_FARGATE_SERVICE_HEALTH_CHECK_PATH = "/";
+const ECS_FARGATE_SERVICE_CPU_SCLAING_ID = "EcsServiceCpuScaling";
+const ECS_FARGATE_SERVICE_MEMORY_SCALING_ID = "EcsServiceMemoryScaling";
 
 // Cloudfront constants
 const CLOUDFRONT_ORIGIN_REQUEST_POLICY_ID = "OriginRequestPolicy";
@@ -373,13 +374,32 @@ export class OrthancAwsStack extends cdk.Stack {
           cluster: ecsCluster,
           loadBalancer: loadBalancer,
           taskDefinition: ecsTaskDefinition,
-          desiredCount: ENABLE_MULTIPLE_AVAILABILITY_ZONES
-            ? ECS_FARGATE_SERVICE_MULTI_AZ_INSTANCE_COUNT
-            : 1,
+          // desiredCount: ENABLE_MULTIPLE_AVAILABILITY_ZONES
+          //   ? ECS_FARGATE_SERVICE_MULTI_AZ_INSTANCE_COUNT
+          //   : 1,
           platformVersion: ecs.FargatePlatformVersion.VERSION1_4,
           securityGroups: [ecsSecurityGroup],
         }
       );
+
+    const ecsScalableTarget = ecsFargateService.service.autoScaleTaskCount({
+      minCapacity: 1,
+      maxCapacity: 10,
+    });
+
+    ecsScalableTarget.scaleOnCpuUtilization(
+      ECS_FARGATE_SERVICE_CPU_SCLAING_ID,
+      {
+        targetUtilizationPercent: 75,
+      }
+    );
+
+    ecsScalableTarget.scaleOnMemoryUtilization(
+      ECS_FARGATE_SERVICE_MEMORY_SCALING_ID,
+      {
+        targetUtilizationPercent: 75,
+      }
+    );
 
     // Configure health check for the ECS Fargate service
     // Taking into account 2xx codes and 4xx codes because 401 is the default state of for unauthenticated requests
