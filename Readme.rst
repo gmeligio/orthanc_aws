@@ -6,7 +6,7 @@ Orthanc server https://www.orthanc-server.com/.
 Features
 ---------
 
-|uncheck| autoscaling
+|check| autoscaling
 
 |check| auto-recovery
 

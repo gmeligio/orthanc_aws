@@ -11,6 +11,7 @@ import * as ecsPatterns from "aws-cdk-lib/aws-ecs-patterns";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as cloudfrontOrigins from "aws-cdk-lib/aws-cloudfront-origins";
+import * as appScaling from "aws-cdk-lib/aws-applicationautoscaling";
 
 // Generic constants
 const ANY_IPV4_CIDR = "0.0.0.0/0";
@@ -44,6 +45,15 @@ const RDS_INSTANCE_ID = "RdsInstance";
 const RDS_INSTANCE_SIZE_GB = 20;
 const RDS_BACKUP_RETENTION_DAYS = 30;
 const RDS_INSTANCE_USERNAME = "postgres";
+const RDS_INSTANCE_CW_LOGS_EXPORTS = ["postgresql"];
+const RDS_CLUSTER_ID = "RdsCluster";
+const RDS_CLUSTER_READ_CAPACITY_ID = "RdsClusterReadScaling";
+const RDS_CLUSTER_READ_CAPACITY_MIN = 1;
+const RDS_CLUSTER_READ_CAPACITY_MAX = 4;
+const RDS_CLUSTER_READ_CAPACITY_SCALE_DIMENSION =
+  "rds:cluster:ReadReplicaCount";
+const RDS_CLUSTER_READ_CAPACITY_POLICY_ID = "RdsClusterReadScalingPolicy";
+const RDS_CLUSTER_READ_CAPACITY_CPU_PERCENT = 75;
 
 // S3 constants
 const S3_BUCKET_DICOM_KMS_KEY = "DicomBucketKey";
@@ -96,6 +106,8 @@ const ECS_FARGATE_SERVICE_HEALTH_CHECK_CODES = "200-499";
 const ECS_FARGATE_SERVICE_HEALTH_CHECK_PATH = "/";
 const ECS_FARGATE_SERVICE_CPU_SCALING_ID = "EcsServiceCpuScaling";
 const ECS_FARGATE_SERVICE_MEMORY_SCALING_ID = "EcsServiceMemoryScaling";
+const ECS_FARGATE_SERVICE_CPU_SCALING_PERCENT = 75;
+const ECS_FARGATE_SERVICE_MEMORY_SCALING_PERCENT = 75;
 
 // Cloudfront constants
 const CLOUDFRONT_ORIGIN_REQUEST_POLICY_ID = "OriginRequestPolicy";
@@ -110,11 +122,8 @@ const CDK_OUTPUT_ECS_CLUSTER_SECRET_NAME = "ecsClusterSecretName";
 const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_ID = "CdkOutputOrthancUrl";
 const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_DESCRIPTION =
   "Orthanc Distribution URL";
-const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_NAME = "cloudfrontDistributionURL";
+const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_NAME = "cloudfrontDistributionUrl";
 
-const ECS_FARGATE_SERVICE_CPU_SCALING_PERCENT = 75;
-const ECS_FARGATE_SERVICE_MEMORY_SCALING_PERCENT = 75;
-const RDS_INSTANCE_CW_LOGS_EXPORTS = ["postgresql"];
 export class OrthancAwsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -171,12 +180,12 @@ export class OrthancAwsStack extends cdk.Stack {
     ecsSecurityGroup.addIngressRule(ecsSecurityGroup, ec2.Port.allTraffic());
 
     // Allow inbound traffic into PostgreSQL
-    const rdsClusterSecurityGroup = new ec2.SecurityGroup(
+    const rdsInstanceSecurityGroup = new ec2.SecurityGroup(
       this,
       RDS_CLUSTER_SECURITY_GROUP_ID,
       { vpc: vpc }
     );
-    rdsClusterSecurityGroup.addIngressRule(
+    rdsInstanceSecurityGroup.addIngressRule(
       ecsSecurityGroup,
       ec2.Port.tcp(POSTGRESQL_PORT)
     );
@@ -230,33 +239,84 @@ export class OrthancAwsStack extends cdk.Stack {
     });
 
     // Create a RDS for PostgreSQL instance
-    const rdsInstance = new rds.DatabaseInstance(this, RDS_INSTANCE_ID, {
-      engine: rds.DatabaseInstanceEngine.postgres({
-        version: rds.PostgresEngineVersion.VER_11,
+    // const rdsInstance = new rds.DatabaseInstance(this, RDS_INSTANCE_ID, {
+    //   engine: rds.DatabaseInstanceEngine.postgres({
+    //     version: rds.PostgresEngineVersion.VER_11,
+    //   }),
+    //   multiAz: ENABLE_MULTIPLE_AVAILABILITY_ZONES,
+    //   deletionProtection: RDS_DETECTION_PROTECTION,
+    //   storageType: rds.StorageType.GP2,
+    //   storageEncrypted: RDS_ENCRYPT_STORAGE,
+    //   storageEncryptionKey: rdsKmsKey,
+    //   allocatedStorage: RDS_INSTANCE_SIZE_GB,
+    //   backupRetention: cdk.Duration.days(RDS_BACKUP_RETENTION_DAYS),
+    //   instanceType: ec2.InstanceType.of(
+    //     ec2.InstanceClass.BURSTABLE3,
+    //     ec2.InstanceSize.MEDIUM
+    //   ),
+    //   credentials: rds.Credentials.fromPassword(
+    //     RDS_INSTANCE_USERNAME,
+    //     rdsPasswordSecret.secretValue
+    //   ),
+    //   vpc: vpc,
+    //   vpcSubnets: {
+    //     subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
+    //   },
+    //   securityGroups: [rdsClusterSecurityGroup],
+    //   cloudwatchLogsExports: RDS_INSTANCE_CW_LOGS_EXPORTS,
+    //   cloudwatchLogsRetention: logs.RetentionDays.THREE_MONTHS,
+    // });
+
+    // Create a RDS for Aurora PostgreSQL cluster
+    const rdsCluster = new rds.DatabaseCluster(this, RDS_CLUSTER_ID, {
+      engine: rds.DatabaseClusterEngine.auroraPostgres({
+        version: rds.AuroraPostgresEngineVersion.VER_11_13,
       }),
-      multiAz: ENABLE_MULTIPLE_AVAILABILITY_ZONES,
       deletionProtection: RDS_DETECTION_PROTECTION,
-      storageType: rds.StorageType.GP2,
       storageEncrypted: RDS_ENCRYPT_STORAGE,
       storageEncryptionKey: rdsKmsKey,
-      allocatedStorage: RDS_INSTANCE_SIZE_GB,
-      backupRetention: cdk.Duration.days(RDS_BACKUP_RETENTION_DAYS),
-      instanceType: ec2.InstanceType.of(
-        ec2.InstanceClass.BURSTABLE3,
-        ec2.InstanceSize.MEDIUM
-      ),
+      backup: {
+        retention: cdk.Duration.days(RDS_BACKUP_RETENTION_DAYS),
+      },
       credentials: rds.Credentials.fromPassword(
         RDS_INSTANCE_USERNAME,
         rdsPasswordSecret.secretValue
       ),
-      vpc: vpc,
-      vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
+      instanceProps: {
+        instanceType: ec2.InstanceType.of(
+          ec2.InstanceClass.BURSTABLE3,
+          ec2.InstanceSize.MEDIUM
+        ),
+        vpcSubnets: {
+          subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
+        },
+        vpc: vpc,
+        securityGroups: [rdsInstanceSecurityGroup],
       },
-      securityGroups: [rdsClusterSecurityGroup],
       cloudwatchLogsExports: RDS_INSTANCE_CW_LOGS_EXPORTS,
       cloudwatchLogsRetention: logs.RetentionDays.THREE_MONTHS,
     });
+
+    // Add auto-scaling target to the RDS Aurora cluster
+    const rdsClusterReadCapacity = new appScaling.ScalableTarget(
+      this,
+      RDS_CLUSTER_READ_CAPACITY_ID,
+      {
+        serviceNamespace: appScaling.ServiceNamespace.RDS,
+        minCapacity: RDS_CLUSTER_READ_CAPACITY_MIN,
+        maxCapacity: RDS_CLUSTER_READ_CAPACITY_MAX,
+        resourceId: `cluster:${rdsCluster.clusterIdentifier}`,
+        scalableDimension: RDS_CLUSTER_READ_CAPACITY_SCALE_DIMENSION,
+      }
+    );
+    rdsClusterReadCapacity.scaleToTrackMetric(
+      RDS_CLUSTER_READ_CAPACITY_POLICY_ID,
+      {
+        targetValue: RDS_CLUSTER_READ_CAPACITY_CPU_PERCENT,
+        predefinedMetric:
+          appScaling.PredefinedMetric.RDS_READER_AVERAGE_CPU_UTILIZATION,
+      }
+    );
 
     /* Compute layer */
 
@@ -315,8 +375,12 @@ export class OrthancAwsStack extends cdk.Stack {
         image: ecs.ContainerImage.fromAsset(ECS_CONTAINER_IMAGE_ASSET_PATH),
         logging: ecsLogDriver,
         environment: {
-          ORTHANC__POSTGRESQL__HOST: rdsInstance.dbInstanceEndpointAddress,
-          ORTHANC__POSTGRESQL__PORT: rdsInstance.dbInstanceEndpointPort,
+          // ORTHANC__POSTGRESQL__HOST: rdsInstance.dbInstanceEndpointAddress,
+          // ORTHANC__POSTGRESQL__PORT: rdsInstance.dbInstanceEndpointPort,
+          ORTHANC__POSTGRESQL__HOST: rdsCluster.clusterEndpoint.hostname,
+          ORTHANC__POSTGRESQL__PORT: cdk.Token.asString(
+            rdsCluster.clusterEndpoint.port
+          ),
           LOCALDOMAIN: `${cdk.Aws.REGION}${ORTHANC_LOCAL_DOMAIN_SLD_SUFFIX}`,
           DICOM_WEB_PLUGIN_ENABLED: ORTHANC_ENABLE_DICOM_WEB_PLUGIN,
           ORTHANC__POSTGRESQL__USERNAME: ORTHANC_POSTGRESQL_USERNAME,
