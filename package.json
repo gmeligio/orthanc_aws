@@ -9,7 +9,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "diagram": "npx cdk-dia"
   },
   "devDependencies": {
     "@types/jest": "^26.0.10",
