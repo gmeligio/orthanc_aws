@@ -57,7 +57,7 @@ Deployment
 
 #. Download project ``git clone https://github.com/gmeligio/orthanc_aws.git && cd orthanc_aws``
 #. Install NodeJS dependencies ``yarn install``
-#. Deploy to AWS ``cdk deploy``
+#. Deploy to AWS ``cdk deploy``. The command takes between 15-20 min to deploy.
 #. Once the command ``cdk deploy`` command is completed, get from the terminal output:
    
    #. Load balancer URL
