@@ -43,7 +43,7 @@ digraph "Diagram" {
       "OrthancAwsStack/Vpc" [
         label = " Vpc",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\Service\Arch_Networking-Content\64\Arch_Amazon-Virtual-Private-Cloud_64@5x.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\Service\Arch_Networking-Content\64\Arch_Amazon-Virtual-Private-Cloud_64@5x.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -53,23 +53,10 @@ digraph "Diagram" {
         width = 2,
         height = 2.266,
       ];
-      "OrthancAwsStack/FlowLogsCloudWatchLogGroup" [
-        label = "\nFlowLogsCloudWatchLog",
-        fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\Resource\Res_Management-Governance\Res_48_Dark\Res_Amazon-Cloudwatch_Logs_48_Dark_gen.png",
-        imagescale = "true",
-        imagepos = "tc",
-        penwidth = "0",
-        shape = "node",
-        fixedsize = "true",
-        labelloc = "b",
-        width = 2,
-        height = 2.4819999999999998,
-      ];
       "OrthancAwsStack/AlbSecurityGroup" [
         label = " AlbSecurityGroup",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\security_group.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\security_group.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -82,7 +69,7 @@ digraph "Diagram" {
       "OrthancAwsStack/EcsSecurityGroup" [
         label = " EcsSecurityGroup",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\security_group.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\security_group.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -95,7 +82,7 @@ digraph "Diagram" {
       "OrthancAwsStack/RdsClusterSecurityGroup" [
         label = "\nRdsClusterSecurityGro",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\security_group.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\security_group.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -108,7 +95,7 @@ digraph "Diagram" {
       "OrthancAwsStack/DicomBucketKey" [
         label = " DicomBucketKey",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\Service\Arch_Security-Identity-Compliance\64\Arch_AWS-Key-Management-Services_64@5x.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\Service\Arch_Security-Identity-Compliance\64\Arch_AWS-Key-Management-Services_64@5x.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -121,7 +108,7 @@ digraph "Diagram" {
       "OrthancAwsStack/DicomBucket" [
         label = " DicomBucket",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\Service\Arch_Storage\64\Arch_Amazon-S3-Standard_64@5x.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\Service\Arch_Storage\64\Arch_Amazon-S3-Standard_64@5x.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -134,7 +121,7 @@ digraph "Diagram" {
       "OrthancAwsStack/RdsPasswordSecret" [
         label = " RdsPasswordSecret",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\Service\Arch_Security-Identity-Compliance\64\Arch_AWS-Secrets-Manager_64@5x.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\Service\Arch_Security-Identity-Compliance\64\Arch_AWS-Secrets-Manager_64@5x.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -147,7 +134,7 @@ digraph "Diagram" {
       "OrthancAwsStack/RdsInstanceKmsKey" [
         label = " RdsInstanceKmsKey",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\Service\Arch_Security-Identity-Compliance\64\Arch_AWS-Key-Management-Services_64@5x.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\Service\Arch_Security-Identity-Compliance\64\Arch_AWS-Key-Management-Services_64@5x.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -157,10 +144,10 @@ digraph "Diagram" {
         width = 2,
         height = 2.266,
       ];
-      "OrthancAwsStack/RdsInstance" [
-        label = " RdsInstance",
+      "OrthancAwsStack/RdsCluster" [
+        label = " RdsCluster",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\Resource\Res_Compute\Res_48_Dark\Res_Amazon-EC2_T3-Instance_48_Dark.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\Service\Arch_Database\64\Arch_Amazon-RDS_64@5x.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -169,11 +156,15 @@ digraph "Diagram" {
         labelloc = "b",
         width = 2,
         height = 2.266,
+      ];
+      "OrthancAwsStack/RdsClusterReadScaling" [
+        label = "\nRdsClusterReadScaling",
+        fontsize = 12,
       ];
       "OrthancAwsStack/EcsClusterSecret" [
         label = " EcsClusterSecret",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\Service\Arch_Security-Identity-Compliance\64\Arch_AWS-Secrets-Manager_64@5x.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\Service\Arch_Security-Identity-Compliance\64\Arch_AWS-Secrets-Manager_64@5x.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -186,7 +177,7 @@ digraph "Diagram" {
       "OrthancAwsStack/EcsCluster" [
         label = " EcsCluster",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\Service\Arch_Compute\64\Arch_Amazon-Elastic-Container-Service_64@5x.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\Service\Arch_Compute\64\Arch_Amazon-Elastic-Container-Service_64@5x.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -199,7 +190,7 @@ digraph "Diagram" {
       "OrthancAwsStack/EcsTaskDefinition" [
         label = " EcsTaskDefinition",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\Resource\Res_Containers\Res_48_Dark\Res_Amazon-Elastic-Container-Service_Task_48_Dark_gen.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\Resource\Res_Containers\Res_48_Dark\Res_Amazon-Elastic-Container-Service_Task_48_Dark_gen.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -212,7 +203,7 @@ digraph "Diagram" {
       "OrthancAwsStack/EcsFargateServiceAlb" [
         label = " EcsFargateServiceAlb",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\Service\Arch_Networking-Content\64\Arch_Elastic-Load-Balancing_64@5x.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\Service\Arch_Networking-Content\64\Arch_Elastic-Load-Balancing_64@5x.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -225,7 +216,7 @@ digraph "Diagram" {
       "OrthancAwsStack/OriginRequestPolicy" [
         label = " OriginRequestPolicy",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\Service\Arch_Networking-Content\64\Arch_Amazon-CloudFront_64@5x.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\Service\Arch_Networking-Content\64\Arch_Amazon-CloudFront_64@5x.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -238,7 +229,7 @@ digraph "Diagram" {
       "OrthancAwsStack/OrthancDistribution" [
         label = " OrthancDistribution",
         fontsize = 12,
-        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\Service\Arch_Networking-Content\64\Arch_Amazon-CloudFront_64@5x.png",
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\Service\Arch_Networking-Content\64\Arch_Amazon-CloudFront_64@5x.png",
         imagescale = "true",
         imagepos = "tc",
         penwidth = "0",
@@ -247,6 +238,19 @@ digraph "Diagram" {
         labelloc = "b",
         width = 2,
         height = 2.266,
+      ];
+      "OrthancAwsStack/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole" [
+        label = " ServiceRole",
+        fontsize = 12,
+        image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\Service\Arch_Security-Identity-Compliance\64\Arch_AWS-Identity-and-Access-Management_64@5x.png",
+        imagescale = "true",
+        imagepos = "tc",
+        penwidth = "0",
+        shape = "node",
+        fixedsize = "true",
+        labelloc = "b",
+        width = 1.2,
+        height = 1.466,
       ];
       subgraph "cluster-SubGraph.Service" {
         graph [
@@ -263,7 +267,7 @@ digraph "Diagram" {
         "OrthancAwsStack/EcsFargateService/Service/Service" [
           label = " ECS Service Service",
           fontsize = 12,
-          image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\39756\node_modules\cdk-dia\icons\aws\Resource\Res_Containers\Res_48_Dark\Res_Amazon-Elastic-Container-Service_Service_48_Dark_gen.png",
+          image = "C:\Users\Eligio\AppData\Roaming\npm-cache\_npx\17664\node_modules\cdk-dia\icons\aws\Resource\Res_Containers\Res_48_Dark\Res_Amazon-Elastic-Container-Service_Service_48_Dark_gen.png",
           imagescale = "true",
           imagepos = "tc",
           penwidth = "0",
@@ -280,9 +284,6 @@ digraph "Diagram" {
       }
     }
   }
-  "OrthancAwsStack/Vpc" -> "OrthancAwsStack/FlowLogsCloudWatchLogGroup" [
-    dir = "both",
-  ];
   "OrthancAwsStack/AlbSecurityGroup" -> "OrthancAwsStack/Vpc" [
     dir = "both",
   ];
@@ -301,16 +302,19 @@ digraph "Diagram" {
   "OrthancAwsStack/DicomBucket" -> "OrthancAwsStack/DicomBucketKey" [
     dir = "both",
   ];
-  "OrthancAwsStack/RdsInstance" -> "OrthancAwsStack/Vpc" [
+  "OrthancAwsStack/RdsCluster" -> "OrthancAwsStack/Vpc" [
     dir = "both",
   ];
-  "OrthancAwsStack/RdsInstance" -> "OrthancAwsStack/RdsClusterSecurityGroup" [
+  "OrthancAwsStack/RdsCluster" -> "OrthancAwsStack/RdsClusterSecurityGroup" [
     dir = "both",
   ];
-  "OrthancAwsStack/RdsInstance" -> "OrthancAwsStack/RdsPasswordSecret" [
+  "OrthancAwsStack/RdsCluster" -> "OrthancAwsStack/RdsPasswordSecret" [
     dir = "both",
   ];
-  "OrthancAwsStack/RdsInstance" -> "OrthancAwsStack/RdsInstanceKmsKey" [
+  "OrthancAwsStack/RdsCluster" -> "OrthancAwsStack/RdsInstanceKmsKey" [
+    dir = "both",
+  ];
+  "OrthancAwsStack/RdsClusterReadScaling" -> "OrthancAwsStack/RdsCluster" [
     dir = "both",
   ];
   "OrthancAwsStack/EcsTaskDefinition" -> "OrthancAwsStack/DicomBucketKey" [
@@ -325,7 +329,7 @@ digraph "Diagram" {
   "OrthancAwsStack/EcsTaskDefinition" -> "OrthancAwsStack/EcsClusterSecret" [
     dir = "both",
   ];
-  "OrthancAwsStack/EcsTaskDefinition" -> "OrthancAwsStack/RdsInstance" [
+  "OrthancAwsStack/EcsTaskDefinition" -> "OrthancAwsStack/RdsCluster" [
     dir = "both",
   ];
   "OrthancAwsStack/EcsFargateServiceAlb" -> "OrthancAwsStack/Vpc" [
