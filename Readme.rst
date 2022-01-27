@@ -37,7 +37,7 @@ Regenerate diagram with
 
 .. code-block:: bash
 
-   npx cdk-diag --target ./docs/diagram.png
+   npx cdk-dia
 
 
 .. figure:: docs/diagram.png
