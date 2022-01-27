@@ -42,16 +42,30 @@ Regenerate diagram with
 
 .. figure:: docs/diagram.png
       
-    Orthanc infrastructure on AWS
+   Orthanc infrastructure on AWS
 
 
 Deployment
 -----------
 
-#. Set the environment variables AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_DEFAULT_REGION to appropriate values.
+#. `Install AWS CDK for TypeScript <https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html>`_
 
-WIP
+    #. Main steps of the CDK installation:
+    #. Run `aws configure` or set the environment variables AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_DEFAULT_REGION to appropriate values.
+    #. Install CDK globally in the OS `yarn global add aws-cdk`
+    #. Prepare AWS storage required for the CDK to work `cdk bootstrap aws://ACCOUNT-NUMBER/REGION`
+
+#. Download project `git clone https://github.com/gmeligio/orthanc_aws.git && cd orthanc_aws`
+#. Install NodeJS dependencies `yarn install`
+#. Deploy to AWS `cdk deploy`
+#. Once the command `cdk deploy` command completed, get from the terminal output:
+   
+   #. Load balancer URL
+   #. Cloudfront distribution URL
+   #. Orthanc credentials secret key.
+
+#. Get Orthanc credentials (username and password) from Secrets Manager `aws secretsmanager get-secret-value --secret-id {ORTHANC_CREDENTIALS_SECRET_KEY}"``
+
 
 .. |check| unicode:: U+2611
 .. |uncheck| unicode:: U+2610
-
