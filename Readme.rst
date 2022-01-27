@@ -58,13 +58,13 @@ Deployment
 #. Download project ``git clone https://github.com/gmeligio/orthanc_aws.git && cd orthanc_aws``
 #. Install NodeJS dependencies ``yarn install``
 #. Deploy to AWS ``cdk deploy``
-#. Once the command ``cdk deploy`` command completed, get from the terminal output:
+#. Once the command ``cdk deploy`` command is completed, get from the terminal output:
    
    #. Load balancer URL
    #. Cloudfront distribution URL
    #. Orthanc credentials secret key.
 
-#. Get Orthanc credentials (username and password) from Secrets Manager ``aws secretsmanager get-secret-value --secret-id {ORTHANC_CREDENTIALS_SECRET_KEY}"``
+#. Get Orthanc credentials (username and password) from Secrets Manager ``aws secretsmanager get-secret-value --secret-id {ORTHANC_CREDENTIALS_SECRET_KEY}``
 
 
 .. |check| unicode:: U+2611
