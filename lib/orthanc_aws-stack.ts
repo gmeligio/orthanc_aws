@@ -115,11 +115,11 @@ const CLOUDFRONT_ORIGIN_REQUEST_POLICY_COMMENT = "Policy optimised for Orthanc";
 const CLOUDFRONT_DISTRIBUTION_ID = "OrthancDistribution";
 
 // CDK output constants
-const CDK_OUTPUT_ECS_CLUSTER_SECRET_ID = "OrthancCredentialsName";
+const CDK_OUTPUT_ECS_CLUSTER_SECRET_ID = "OrthancCredentialsSecretKey";
 const CDK_OUTPUT_ECS_CLUSTER_SECRET_DESCRIPTION =
   "The name of the OrthancCredentials secret";
 const CDK_OUTPUT_ECS_CLUSTER_SECRET_NAME = "ecsClusterSecretName";
-const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_ID = "CdkOutputOrthancUrl";
+const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_ID = "OrthancCloudfrontUrl";
 const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_DESCRIPTION =
   "Orthanc Distribution URL";
 const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_NAME = "cloudfrontDistributionUrl";
@@ -136,9 +136,6 @@ export class OrthancAwsStack extends cdk.Stack {
     const vpc = new ec2.Vpc(this, VPC_ID, {
       maxAzs: VPC_MAX_AVAILABILITY_ZONES, // Default is all AZs in region
     });
-
-    // Publish VPC flow logs to CloudWatch Logs
-    // const logGroup = new logs.LogGroup(this, VPC_FLOW_LOGS_CW_LOG_GROUP_ID);
 
     vpc.addFlowLog(VPC_FLOW_LOGS_ID, {
       // destination: ec2.FlowLogDestination.toCloudWatchLogs(logGroup),
@@ -237,35 +234,6 @@ export class OrthancAwsStack extends cdk.Stack {
     const rdsKmsKey = new kms.Key(this, RDS_KMS_KEY_ID, {
       enableKeyRotation: KMS_ENABLE_KEY_ROTATION,
     });
-
-    // Create a RDS for PostgreSQL instance
-    // const rdsInstance = new rds.DatabaseInstance(this, RDS_INSTANCE_ID, {
-    //   engine: rds.DatabaseInstanceEngine.postgres({
-    //     version: rds.PostgresEngineVersion.VER_11,
-    //   }),
-    //   multiAz: ENABLE_MULTIPLE_AVAILABILITY_ZONES,
-    //   deletionProtection: RDS_DETECTION_PROTECTION,
-    //   storageType: rds.StorageType.GP2,
-    //   storageEncrypted: RDS_ENCRYPT_STORAGE,
-    //   storageEncryptionKey: rdsKmsKey,
-    //   allocatedStorage: RDS_INSTANCE_SIZE_GB,
-    //   backupRetention: cdk.Duration.days(RDS_BACKUP_RETENTION_DAYS),
-    //   instanceType: ec2.InstanceType.of(
-    //     ec2.InstanceClass.BURSTABLE3,
-    //     ec2.InstanceSize.MEDIUM
-    //   ),
-    //   credentials: rds.Credentials.fromPassword(
-    //     RDS_INSTANCE_USERNAME,
-    //     rdsPasswordSecret.secretValue
-    //   ),
-    //   vpc: vpc,
-    //   vpcSubnets: {
-    //     subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
-    //   },
-    //   securityGroups: [rdsClusterSecurityGroup],
-    //   cloudwatchLogsExports: RDS_INSTANCE_CW_LOGS_EXPORTS,
-    //   cloudwatchLogsRetention: logs.RetentionDays.THREE_MONTHS,
-    // });
 
     // Create a RDS for Aurora PostgreSQL cluster
     const rdsCluster = new rds.DatabaseCluster(this, RDS_CLUSTER_ID, {
