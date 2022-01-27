@@ -40,7 +40,7 @@ Regenerate diagram with
    npx cdk-dia
 
 
-.. figure:: docs/diagram.png
+.. figure:: diagram.png
       
    Orthanc infrastructure on AWS
 
