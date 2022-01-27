@@ -12,6 +12,8 @@ import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as cloudfrontOrigins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as appScaling from "aws-cdk-lib/aws-applicationautoscaling";
+import * as route53 from "aws-cdk-lib/aws-route53";
+import * as route53Targets from "aws-cdk-lib/aws-route53-targets";
 
 // Generic constants
 const ANY_IPV4_CIDR = "0.0.0.0/0";
@@ -153,6 +155,10 @@ export class OrthancAwsStack extends cdk.Stack {
       ec2.Peer.ipv4(ANY_IPV4_CIDR),
       ec2.Port.tcp(HTTP_PORT)
     );
+    // loadBalancerSecurityGroup.addIngressRule(
+    //   ec2.Peer.ipv4(ANY_IPV4_CIDR),
+    //   ec2.Port.tcp(HTTPS_PORT)
+    // );
 
     // Allow inbound traffic from load balancer's HTTP and Orcthanc's DICOM and HTTP server
     const ecsSecurityGroup = new ec2.SecurityGroup(
@@ -404,10 +410,97 @@ export class OrthancAwsStack extends cdk.Stack {
       internetFacing: ELB_ALB_HAS_INTERNET_ROUTE,
     });
 
-    // Create the ECS Fargate service with a load balancer
+    // const httpListener = loadBalancer.addListener("HttpListener", {
+    //   protocol: elbv2.ApplicationProtocol.HTTPS,
+    // });
+    // httpListener
+
+    // httpListener.addRedirectResponse("HttpRedirect", {
+    //   statusCode: "HTTP_301",
+    //   protocol: elbv2.ApplicationProtocol.HTTPS,
+    //   port: "443",
+    // });
+
+    const apexDomain = "scientificnorth.com";
+    const subdomainName = `orthanc.${apexDomain}`;
+    const recordName = domainName;
+    const wildcardRecordName = `*.${domainName}`;
+
+    const subdomainHostedZone = new route53.HostedZone(this, "HostedZone", {
+      zoneName: subdomainName,
+    });
+
+    const rootHostedZone = route53.HostedZone.fromLookup(this, "HostedZone", {
+      domainName: apexDomain,
+    });
+
+    const loadBalancerTarget = route53.RecordTarget.fromAlias(
+      new route53Targets.LoadBalancerTarget(loadBalancer)
+    );
+
+    const nameServers = route53HostedZone.hostedZoneNameServers!;
+
+    const zoneDelegationRecord = new route53.ZoneDelegationRecord(
+      this,
+      "MyZoneDelegationRecord",
+      {
+        nameServers: ["nameServers"],
+        zone: hostedZone,
+
+        // the properties below are optional
+        comment: "comment",
+        recordName: "recordName",
+        ttl: cdk.Duration.minutes(30),
+      }
+    );
+
+    // new route53.ARecord(this, "ARecord", {
+    //   zone: route53HostedZone,
+    //   recordName: domainName,
+    //   target: loadBalancerTarget,
+    // });
+
+    // new route53.ARecord(this, "WildCardARecord", {
+    //   zone: route53HostedZone,
+    //   recordName: wildcardRecordName,
+    //   target: loadBalancerTarget,
+    // });
+
+    // new route53.ARecord(this, "MyCnameRecord", {
+    //   zone: route53HostedZone,
+    //   target: route53.RecordTarget.fromAlias(
+    //     new route53Targets.Route53RecordTarget(restApi)
+    //   ),
+    // });
+
+    // new route53.ARecord(this, 'AliasRecord', {
+    //   zone,
+    //   target: route53.RecordTarget.fromAlias(new targets.ApiGateway(restApi)),
+    //   // or - route53.RecordTarget.fromAlias(new alias.ApiGatewayDomain(domainName)),
+    // });
+
+    // const acmCertificate = new acm.Certificate(this, "Certificate", {
+    //   domainName: domainName,
+    //   validation: acm.CertificateValidation.fromDns(route53HostedZone),
+    // });
+
     // TODO: support ALB SSL offloading
     // TODO: add a DNS name and hosted zone
     // TODO: create a certificate for that hosted zone with ACM
+    // const loadBalancedFargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'Service', {
+    //   vpc,
+    //   cluster,
+    //   certificate,
+    //   sslPolicy: SslPolicy.RECOMMENDED,
+    //   domainName: 'api.example.com',
+    //   domainZone,
+    //   redirectHTTP: true,
+    //   taskImageOptions: {
+    //     image: ecs.ContainerImage.fromRegistry("amazon/amazon-ecs-sample"),
+    //   },
+    // });
+
+    // Create the ECS Fargate service with a load balancer
     const ecsFargateService =
       new ecsPatterns.ApplicationLoadBalancedFargateService(
         this,
@@ -416,16 +509,14 @@ export class OrthancAwsStack extends cdk.Stack {
           cluster: ecsCluster,
           loadBalancer: loadBalancer,
           taskDefinition: ecsTaskDefinition,
-          // desiredCount: ENABLE_MULTIPLE_AVAILABILITY_ZONES
-          //   ? ECS_FARGATE_SERVICE_MULTI_AZ_INSTANCE_COUNT
-          //   : 1,
           platformVersion: ecs.FargatePlatformVersion.VERSION1_4,
           securityGroups: [ecsSecurityGroup],
-          // redirectHTTP: true,
-          // protocol: elbv2.ApplicationProtocol.HTTPS,
-          // domainName
-          // domainZone
-          // certificate
+          redirectHTTP: true,
+          protocol: elbv2.ApplicationProtocol.HTTPS,
+          domainName: domainName,
+          domainZone: route53HostedZone,
+          // listenerPort: HTTPS_PORT,
+          // certificate: acmCertificate,
         }
       );
 
