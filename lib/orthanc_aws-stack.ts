@@ -120,12 +120,16 @@ const CLOUDFRONT_DISTRIBUTION_ID = "OrthancDistribution";
 const CDK_OUTPUT_ECS_CLUSTER_SECRET_ID = "OrthancCredentialsSecretKey";
 const CDK_OUTPUT_ECS_CLUSTER_SECRET_DESCRIPTION =
   "The name of the OrthancCredentials secret";
-const CDK_OUTPUT_ECS_CLUSTER_SECRET_NAME = "ecsClusterSecretName";
+const CDK_OUTPUT_ECS_CLUSTER_SECRET_NAME = "ecsClusterSecretNameSsl";
 const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_ID = "OrthancCloudfrontUrl";
 const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_DESCRIPTION =
   "Orthanc Distribution URL";
-const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_NAME = "cloudfrontDistributionUrl";
+const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_NAME =
+  "cloudfrontDistributionUrlSsl";
 
+const ROUTE53_ROOT_ZONE_ID = "RootHostedZone";
+const ROUTE53_SUBDOMAIN_ZONE_ID = "SubdomainHostedZone";
+const ROUTE53_ZONE_DELEGATION_RECORD_ID = "ZoneDelegationRecord";
 export class OrthancAwsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -410,95 +414,26 @@ export class OrthancAwsStack extends cdk.Stack {
       internetFacing: ELB_ALB_HAS_INTERNET_ROUTE,
     });
 
-    // const httpListener = loadBalancer.addListener("HttpListener", {
-    //   protocol: elbv2.ApplicationProtocol.HTTPS,
-    // });
-    // httpListener
-
-    // httpListener.addRedirectResponse("HttpRedirect", {
-    //   statusCode: "HTTP_301",
-    //   protocol: elbv2.ApplicationProtocol.HTTPS,
-    //   port: "443",
-    // });
-
     const apexDomain = "scientificnorth.com";
     const subdomainName = `orthanc.${apexDomain}`;
-    const recordName = domainName;
-    const wildcardRecordName = `*.${domainName}`;
 
-    const subdomainHostedZone = new route53.HostedZone(this, "HostedZone", {
-      zoneName: subdomainName,
-    });
-
-    const rootHostedZone = route53.HostedZone.fromLookup(this, "HostedZone", {
+    const rootZone = route53.HostedZone.fromLookup(this, ROUTE53_ROOT_ZONE_ID, {
       domainName: apexDomain,
     });
 
-    const loadBalancerTarget = route53.RecordTarget.fromAlias(
-      new route53Targets.LoadBalancerTarget(loadBalancer)
-    );
-
-    const nameServers = route53HostedZone.hostedZoneNameServers!;
-
-    const zoneDelegationRecord = new route53.ZoneDelegationRecord(
+    const subdomainZone = new route53.HostedZone(
       this,
-      "MyZoneDelegationRecord",
+      ROUTE53_SUBDOMAIN_ZONE_ID,
       {
-        nameServers: ["nameServers"],
-        zone: hostedZone,
-
-        // the properties below are optional
-        comment: "comment",
-        recordName: "recordName",
-        ttl: cdk.Duration.minutes(30),
+        zoneName: subdomainName,
       }
     );
 
-    // new route53.ARecord(this, "ARecord", {
-    //   zone: route53HostedZone,
-    //   recordName: domainName,
-    //   target: loadBalancerTarget,
-    // });
-
-    // new route53.ARecord(this, "WildCardARecord", {
-    //   zone: route53HostedZone,
-    //   recordName: wildcardRecordName,
-    //   target: loadBalancerTarget,
-    // });
-
-    // new route53.ARecord(this, "MyCnameRecord", {
-    //   zone: route53HostedZone,
-    //   target: route53.RecordTarget.fromAlias(
-    //     new route53Targets.Route53RecordTarget(restApi)
-    //   ),
-    // });
-
-    // new route53.ARecord(this, 'AliasRecord', {
-    //   zone,
-    //   target: route53.RecordTarget.fromAlias(new targets.ApiGateway(restApi)),
-    //   // or - route53.RecordTarget.fromAlias(new alias.ApiGatewayDomain(domainName)),
-    // });
-
-    // const acmCertificate = new acm.Certificate(this, "Certificate", {
-    //   domainName: domainName,
-    //   validation: acm.CertificateValidation.fromDns(route53HostedZone),
-    // });
-
-    // TODO: support ALB SSL offloading
-    // TODO: add a DNS name and hosted zone
-    // TODO: create a certificate for that hosted zone with ACM
-    // const loadBalancedFargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'Service', {
-    //   vpc,
-    //   cluster,
-    //   certificate,
-    //   sslPolicy: SslPolicy.RECOMMENDED,
-    //   domainName: 'api.example.com',
-    //   domainZone,
-    //   redirectHTTP: true,
-    //   taskImageOptions: {
-    //     image: ecs.ContainerImage.fromRegistry("amazon/amazon-ecs-sample"),
-    //   },
-    // });
+    new route53.ZoneDelegationRecord(this, ROUTE53_ZONE_DELEGATION_RECORD_ID, {
+      recordName: subdomainName,
+      nameServers: subdomainZone.hostedZoneNameServers!,
+      zone: rootZone,
+    });
 
     // Create the ECS Fargate service with a load balancer
     const ecsFargateService =
@@ -513,10 +448,8 @@ export class OrthancAwsStack extends cdk.Stack {
           securityGroups: [ecsSecurityGroup],
           redirectHTTP: true,
           protocol: elbv2.ApplicationProtocol.HTTPS,
-          domainName: domainName,
-          domainZone: route53HostedZone,
-          // listenerPort: HTTPS_PORT,
-          // certificate: acmCertificate,
+          domainName: subdomainName,
+          domainZone: subdomainZone,
         }
       );
 
