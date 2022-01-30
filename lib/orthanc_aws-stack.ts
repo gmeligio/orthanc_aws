@@ -12,6 +12,7 @@ import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as cloudfrontOrigins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as appScaling from "aws-cdk-lib/aws-applicationautoscaling";
+import * as route53 from "aws-cdk-lib/aws-route53";
 
 // Generic constants
 const ANY_IPV4_CIDR = "0.0.0.0/0";
@@ -20,6 +21,8 @@ const HTTPS_PORT = 443;
 const ORTHANC_DICOM_SERVER_PORT = 4242;
 const ORTHANC_HTTP_SERVER_PORT = 8042;
 const POSTGRESQL_PORT = 5432;
+const DOMAIN_SEPARATOR = ".";
+const APEX_DOMAIN_ARRAY_START_INDEX = -2;
 
 // AWS constants
 const ENABLE_MULTIPLE_AVAILABILITY_ZONES = true;
@@ -114,6 +117,11 @@ const CLOUDFRONT_ORIGIN_REQUEST_POLICY_ID = "OriginRequestPolicy";
 const CLOUDFRONT_ORIGIN_REQUEST_POLICY_COMMENT = "Policy optimised for Orthanc";
 const CLOUDFRONT_DISTRIBUTION_ID = "OrthancDistribution";
 
+// Route53 constants
+const ROUTE53_ROOT_ZONE_ID = "RootHostedZone";
+const ROUTE53_SUBDOMAIN_ZONE_ID = "SubdomainHostedZone";
+const ROUTE53_ZONE_DELEGATION_RECORD_ID = "ZoneDelegationRecord";
+
 // CDK output constants
 const CDK_OUTPUT_ECS_CLUSTER_SECRET_ID = "OrthancCredentialsSecretKey";
 const CDK_OUTPUT_ECS_CLUSTER_SECRET_DESCRIPTION =
@@ -123,6 +131,10 @@ const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_ID = "OrthancCloudfrontUrl";
 const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_DESCRIPTION =
   "Orthanc Distribution URL";
 const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_NAME = "cloudfrontDistributionUrl";
+
+// CDK context constants
+const CDK_CONTEXT_SUBDOMAIN_NAME_KEY = "subdomain";
+const CDK_CONTEXT_SHOULD_CREATE_SUBDOMAIN_ZONE_KEY = "createSubdomainZone";
 
 export class OrthancAwsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -149,10 +161,11 @@ export class OrthancAwsStack extends cdk.Stack {
       ELB_ALB_SECURITY_GROUP_ID,
       { vpc: vpc }
     );
-    loadBalancerSecurityGroup.addIngressRule(
-      ec2.Peer.ipv4(ANY_IPV4_CIDR),
-      ec2.Port.tcp(HTTP_PORT)
-    );
+
+    // loadBalancerSecurityGroup.addIngressRule(
+    //   ec2.Peer.ipv4(ANY_IPV4_CIDR),
+    //   ec2.Port.tcp(HTTPS_PORT)
+    // );
 
     // Allow inbound traffic from load balancer's HTTP and Orcthanc's DICOM and HTTP server
     const ecsSecurityGroup = new ec2.SecurityGroup(
@@ -404,30 +417,98 @@ export class OrthancAwsStack extends cdk.Stack {
       internetFacing: ELB_ALB_HAS_INTERNET_ROUTE,
     });
 
-    // Create the ECS Fargate service with a load balancer
-    // TODO: support ALB SSL offloading
-    // TODO: add a DNS name and hosted zone
-    // TODO: create a certificate for that hosted zone with ACM
-    const ecsFargateService =
-      new ecsPatterns.ApplicationLoadBalancedFargateService(
+    const contextSubdomainName: string = this.node.tryGetContext(
+      CDK_CONTEXT_SUBDOMAIN_NAME_KEY
+    );
+
+    const contextShouldCreateSubdomainZone = this.node.tryGetContext(
+      CDK_CONTEXT_SHOULD_CREATE_SUBDOMAIN_ZONE_KEY
+    );
+
+    let ecsFargateService: ecsPatterns.ApplicationLoadBalancedFargateService;
+
+    // Create the ECS Fargate Service in a subdomain if the context is set
+    if (contextSubdomainName !== undefined) {
+      const apexDomain = contextSubdomainName
+        .split(DOMAIN_SEPARATOR)
+        .slice(APEX_DOMAIN_ARRAY_START_INDEX)
+        .join(DOMAIN_SEPARATOR);
+
+      let subdomainZone: route53.IHostedZone;
+
+      // Create a hosted zone for the subdomain if the context is set
+      if (contextShouldCreateSubdomainZone !== undefined) {
+        const rootZone = route53.HostedZone.fromLookup(
+          this,
+          ROUTE53_ROOT_ZONE_ID,
+          {
+            domainName: apexDomain,
+          }
+        );
+
+        subdomainZone = new route53.HostedZone(
+          this,
+          ROUTE53_SUBDOMAIN_ZONE_ID,
+          {
+            zoneName: contextSubdomainName,
+          }
+        );
+
+        new route53.ZoneDelegationRecord(
+          this,
+          ROUTE53_ZONE_DELEGATION_RECORD_ID,
+          {
+            recordName: contextSubdomainName,
+            nameServers: subdomainZone.hostedZoneNameServers!,
+            zone: rootZone,
+          }
+        );
+      } else {
+        // Find the hosted zone for the subdomain inside the existent hosted zones
+        subdomainZone = route53.HostedZone.fromLookup(
+          this,
+          ROUTE53_SUBDOMAIN_ZONE_ID,
+          {
+            domainName: contextSubdomainName,
+          }
+        );
+      }
+
+      // Create the ECS Fargate service with a load balancer in the static subdomain endpoint given by the context
+      ecsFargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(
         this,
         ECS_FARGATE_SERVICE_ID,
         {
           cluster: ecsCluster,
           loadBalancer: loadBalancer,
           taskDefinition: ecsTaskDefinition,
-          // desiredCount: ENABLE_MULTIPLE_AVAILABILITY_ZONES
-          //   ? ECS_FARGATE_SERVICE_MULTI_AZ_INSTANCE_COUNT
-          //   : 1,
           platformVersion: ecs.FargatePlatformVersion.VERSION1_4,
           securityGroups: [ecsSecurityGroup],
-          // redirectHTTP: true,
-          // protocol: elbv2.ApplicationProtocol.HTTPS,
-          // domainName
-          // domainZone
-          // certificate
+          redirectHTTP: true,
+          protocol: elbv2.ApplicationProtocol.HTTPS,
+          domainName: contextSubdomainName,
+          domainZone: subdomainZone,
         }
       );
+    } else {
+      loadBalancerSecurityGroup.addIngressRule(
+        ec2.Peer.ipv4(ANY_IPV4_CIDR),
+        ec2.Port.tcp(HTTP_PORT)
+      );
+
+      // Create the ECS Fargate service with a load balancer in a dynamic endpoint given by CloudFormation
+      ecsFargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(
+        this,
+        ECS_FARGATE_SERVICE_ID,
+        {
+          cluster: ecsCluster,
+          loadBalancer: loadBalancer,
+          taskDefinition: ecsTaskDefinition,
+          platformVersion: ecs.FargatePlatformVersion.VERSION1_4,
+          securityGroups: [ecsSecurityGroup],
+        }
+      );
+    }
 
     const ecsScalableTarget = ecsFargateService.service.autoScaleTaskCount({
       minCapacity: 1,
