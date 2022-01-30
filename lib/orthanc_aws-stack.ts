@@ -13,7 +13,6 @@ import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as cloudfrontOrigins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as appScaling from "aws-cdk-lib/aws-applicationautoscaling";
 import * as route53 from "aws-cdk-lib/aws-route53";
-import * as route53Targets from "aws-cdk-lib/aws-route53-targets";
 
 // Generic constants
 const ANY_IPV4_CIDR = "0.0.0.0/0";
@@ -127,12 +126,11 @@ const ROUTE53_ZONE_DELEGATION_RECORD_ID = "ZoneDelegationRecord";
 const CDK_OUTPUT_ECS_CLUSTER_SECRET_ID = "OrthancCredentialsSecretKey";
 const CDK_OUTPUT_ECS_CLUSTER_SECRET_DESCRIPTION =
   "The name of the OrthancCredentials secret";
-const CDK_OUTPUT_ECS_CLUSTER_SECRET_NAME = "ecsClusterSecretNameSsl";
+const CDK_OUTPUT_ECS_CLUSTER_SECRET_NAME = "ecsClusterSecretName";
 const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_ID = "OrthancCloudfrontUrl";
 const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_DESCRIPTION =
   "Orthanc Distribution URL";
-const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_NAME =
-  "cloudfrontDistributionUrlSsl";
+const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_NAME = "cloudfrontDistributionUrl";
 
 // CDK context constants
 const CDK_CONTEXT_SUBDOMAIN_NAME_KEY = "subdomain";
