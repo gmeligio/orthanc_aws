@@ -17,7 +17,6 @@ import * as route53 from "aws-cdk-lib/aws-route53";
 // Generic constants
 const ANY_IPV4_CIDR = "0.0.0.0/0";
 const HTTP_PORT = 80;
-const HTTPS_PORT = 443;
 const ORTHANC_DICOM_SERVER_PORT = 4242;
 const ORTHANC_HTTP_SERVER_PORT = 8042;
 const POSTGRESQL_PORT = 5432;
@@ -30,7 +29,6 @@ const ENABLE_MULTIPLE_AVAILABILITY_ZONES = true;
 // VPC constants
 const VPC_MAX_AVAILABILITY_ZONES = 2;
 const VPC_ID = "Vpc";
-const VPC_FLOW_LOGS_CW_LOG_GROUP_ID = "FlowLogsCloudWatchLogGroup";
 const VPC_FLOW_LOGS_ID = "FlowLogs";
 
 // ELB constants
@@ -44,8 +42,6 @@ const RDS_PASSWORD_SECRET_ID = "RdsPasswordSecret";
 const RDS_KMS_KEY_ID = "RdsInstanceKmsKey";
 const RDS_DETECTION_PROTECTION = false;
 const RDS_ENCRYPT_STORAGE = true;
-const RDS_INSTANCE_ID = "RdsInstance";
-const RDS_INSTANCE_SIZE_GB = 20;
 const RDS_BACKUP_RETENTION_DAYS = 30;
 const RDS_INSTANCE_USERNAME = "postgres";
 const RDS_INSTANCE_CW_LOGS_EXPORTS = ["postgresql"];
@@ -134,8 +130,12 @@ const CDK_OUTPUT_CLOUDFRONT_DISTRIBUTION_URL_NAME = "cloudfrontDistributionUrl";
 
 // CDK context constants
 const CDK_CONTEXT_SUBDOMAIN_NAME_KEY = "subdomain";
-const CDK_CONTEXT_SHOULD_CREATE_SUBDOMAIN_ZONE_KEY = "createSubdomainZone";
+const CDK_CONTEXT_SHOULD_CREATE_SUBDOMAIN_ZONE_KEY =
+  "shouldCreateSubdomainZone";
 
+const ECS_SCALABLE_TARGET_MIN_CAPACITY = 1;
+const ECS_SCALABLE_TARGET_MAX_CAPACITY = 10;
+const CREATE_SUBDOMAIN = "create";
 export class OrthancAwsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -161,11 +161,6 @@ export class OrthancAwsStack extends cdk.Stack {
       ELB_ALB_SECURITY_GROUP_ID,
       { vpc: vpc }
     );
-
-    // loadBalancerSecurityGroup.addIngressRule(
-    //   ec2.Peer.ipv4(ANY_IPV4_CIDR),
-    //   ec2.Port.tcp(HTTPS_PORT)
-    // );
 
     // Allow inbound traffic from load balancer's HTTP and Orcthanc's DICOM and HTTP server
     const ecsSecurityGroup = new ec2.SecurityGroup(
@@ -356,8 +351,6 @@ export class OrthancAwsStack extends cdk.Stack {
         image: ecs.ContainerImage.fromAsset(ECS_CONTAINER_IMAGE_ASSET_PATH),
         logging: ecsLogDriver,
         environment: {
-          // ORTHANC__POSTGRESQL__HOST: rdsInstance.dbInstanceEndpointAddress,
-          // ORTHANC__POSTGRESQL__PORT: rdsInstance.dbInstanceEndpointPort,
           ORTHANC__POSTGRESQL__HOST: rdsCluster.clusterEndpoint.hostname,
           ORTHANC__POSTGRESQL__PORT: cdk.Token.asString(
             rdsCluster.clusterEndpoint.port
@@ -437,7 +430,7 @@ export class OrthancAwsStack extends cdk.Stack {
       let subdomainZone: route53.IHostedZone;
 
       // Create a hosted zone for the subdomain if the context is set
-      if (contextShouldCreateSubdomainZone !== undefined) {
+      if (contextShouldCreateSubdomainZone === CREATE_SUBDOMAIN) {
         const rootZone = route53.HostedZone.fromLookup(
           this,
           ROUTE53_ROOT_ZONE_ID,
@@ -511,8 +504,8 @@ export class OrthancAwsStack extends cdk.Stack {
     }
 
     const ecsScalableTarget = ecsFargateService.service.autoScaleTaskCount({
-      minCapacity: 1,
-      maxCapacity: 10,
+      minCapacity: ECS_SCALABLE_TARGET_MIN_CAPACITY,
+      maxCapacity: ECS_SCALABLE_TARGET_MAX_CAPACITY,
     });
 
     ecsScalableTarget.scaleOnCpuUtilization(

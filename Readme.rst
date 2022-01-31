@@ -12,7 +12,7 @@ Features
 
 |check| cloudwatch logs
 
-|uncheck| loadbalancer SSL offloading
+|check| loadbalancer SSL offloading
 
 |check| publicly accessible
 
@@ -57,7 +57,16 @@ Deployment
 
 #. Download project ``git clone https://github.com/gmeligio/orthanc_aws.git && cd orthanc_aws``
 #. Install NodeJS dependencies ``yarn install``
-#. Deploy to AWS ``cdk deploy``. The command takes between 15-20 min to deploy.
+#. Deploy to AWS. The deploy command takes between 15-20 min to complete.
+   
+   #. For SSL offloading support a hosted zone for an apex domain must already exists in Route53, i.e. ``example.com``. Pass a subdomain argument (like ``subdomain=orthanc.example.com``).
+   
+      #. If a Route53 hosted zone does not exist for this subdomain, then one should be created, pass ``shouldCreateSubdomainZone=create``. A full example: ``cdk deploy -c subdomain=orthanc.example.com -c shouldCreateSubdomainZone=create``. 
+      #.  If a Route53 hosted zone exists, do not pass the ``shouldCreateSubdomainZone`` argument. A full example: ``cdk deploy -c subdomain=orthanc.example.com``. 
+
+   #. Without SSL offloading and exposing the load balancer in HTTP port (TCP 80): ``cdk deploy``
+   
+
 #. Once the command ``cdk deploy`` command is completed, get from the terminal output:
    
    #. Load balancer URL
